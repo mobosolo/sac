@@ -1,4 +1,4 @@
-import { Trash2, Briefcase, Package } from "lucide-react";
+import { Trash2, Briefcase, Package, Download } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export interface TransportEntry {
@@ -12,9 +12,10 @@ export interface TransportEntry {
 interface HistoriqueTabProps {
   entries: TransportEntry[];
   onDelete: (id: string) => void;
+  onExport: () => void;
 }
 
-export function HistoriqueTab({ entries, onDelete }: HistoriqueTabProps) {
+export function HistoriqueTab({ entries, onDelete, onExport }: HistoriqueTabProps) {
   const grouped = groupByDay(entries);
 
   if (entries.length === 0) {
@@ -35,13 +36,37 @@ export function HistoriqueTab({ entries, onDelete }: HistoriqueTabProps) {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <div className="px-5 pt-14 pb-5">
-        <h2 className="text-white" style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px" }}>
-          Historique
-        </h2>
-        <p className="text-slate-400 mt-0.5" style={{ fontSize: 13 }}>
-          {entries.length} transport{entries.length > 1 ? "s" : ""} enregistré{entries.length > 1 ? "s" : ""}
-        </p>
+      {/* Header */}
+      <div className="px-5 pt-14 pb-5 flex items-start justify-between">
+        <div>
+          <h2 className="text-white" style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.5px" }}>
+            Historique
+          </h2>
+          <p className="text-slate-400 mt-0.5" style={{ fontSize: 13 }}>
+            {entries.length} transport{entries.length > 1 ? "s" : ""} enregistré{entries.length > 1 ? "s" : ""}
+          </p>
+        </div>
+
+        {/* Bouton Export */}
+        <button
+          onClick={onExport}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 14px",
+            borderRadius: 12,
+            background: "rgba(16,185,129,0.12)",
+            border: "1.5px solid rgba(16,185,129,0.3)",
+            color: "#10B981",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          <Download size={15} />
+          Sauvegarder
+        </button>
       </div>
 
       <div className="px-5 flex flex-col gap-6 pb-6">
@@ -49,7 +74,13 @@ export function HistoriqueTab({ entries, onDelete }: HistoriqueTabProps) {
           <div key={label}>
             <div
               className="mb-3 px-1"
-              style={{ color: "#64748B", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}
+              style={{
+                color: "#64748B",
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
             >
               {label}
             </div>
@@ -133,7 +164,7 @@ function EntryCard({
         </div>
       </div>
 
-      {/* Amount */}
+      {/* Montant + Supprimer */}
       <div className="flex items-center gap-3 shrink-0">
         <span style={{ color: "#10B981", fontSize: 17, fontWeight: 800, letterSpacing: "-0.5px" }}>
           {total.toLocaleString("fr-FR")}
