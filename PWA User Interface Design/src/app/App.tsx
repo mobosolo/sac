@@ -81,7 +81,7 @@ export default function App() {
       <div style={{ paddingBottom: 80, minHeight: "100dvh" }}>
         {activeTab === "saisie" && <SaisieTab onSave={handleSave} />}
         {activeTab === "historique" && (
-          <HistoriqueTab entries={entries} onDelete={handleDelete} />
+          <HistoriqueTab entries={entries} onDelete={handleDelete} onExport={handleExport} />
         )}
         {activeTab === "resume" && <ResumeTab entries={entries} />}
       </div>
