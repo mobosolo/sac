@@ -6,6 +6,8 @@ interface SaisieTabProps {
   onSave: (entry: { name: string; low: number; high: number }) => void;
 }
 
+const QUICK_NAMES = ["Malien", "Lau", "Cha", "Franc"];
+
 export function SaisieTab({ onSave }: SaisieTabProps) {
   const [name, setName] = useState("");
   const [low, setLow] = useState(0);
@@ -66,10 +68,44 @@ export function SaisieTab({ onSave }: SaisieTabProps) {
       </div>
 
       <div className="px-5 flex flex-col gap-4">
+        {/* Quick name buttons */}
+        <div>
+          <label
+            className="text-slate-400 mb-2 block"
+            style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}
+          >
+            Sélection rapide
+          </label>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {QUICK_NAMES.map((n) => (
+              <button
+                key={n}
+                onClick={() => setName(n)}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: 12,
+                  border: name === n ? "1.5px solid #10B981" : "1.5px solid rgba(148,163,184,0.2)",
+                  background: name === n ? "rgba(16,185,129,0.15)" : "#1E293B",
+                  color: name === n ? "#10B981" : "#94A3B8",
+                  fontWeight: 600,
+                  fontSize: 15,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Name input */}
         <div>
-          <label className="text-slate-400 mb-2 block" style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            Nom du porteur
+          <label
+            className="text-slate-400 mb-2 block"
+            style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}
+          >
+            Ou saisir un nom
           </label>
           <input
             value={name}
@@ -94,6 +130,7 @@ export function SaisieTab({ onSave }: SaisieTabProps) {
           sublabel="250 FCFA / unité"
           value={low}
           onAdjust={(d) => adjust("low", d)}
+          onDirectInput={(v) => setLow(v)}
           color="#60A5FA"
         />
 
@@ -103,6 +140,7 @@ export function SaisieTab({ onSave }: SaisieTabProps) {
           sublabel="500 FCFA / unité"
           value={high}
           onAdjust={(d) => adjust("high", d)}
+          onDirectInput={(v) => setHigh(v)}
           color="#A78BFA"
         />
 
@@ -146,8 +184,7 @@ export function SaisieTab({ onSave }: SaisieTabProps) {
                 : saved
                 ? "#059669"
                 : "#10B981",
-            color:
-              !name.trim() || (low === 0 && high === 0) ? "#475569" : "#ffffff",
+            color: !name.trim() || (low === 0 && high === 0) ? "#475569" : "#ffffff",
             fontSize: 17,
             fontWeight: 700,
             letterSpacing: "-0.2px",
@@ -190,21 +227,34 @@ function CounterCard({
   sublabel,
   value,
   onAdjust,
+  onDirectInput,
   color,
 }: {
   label: string;
   sublabel: string;
   value: number;
   onAdjust: (d: number) => void;
+  onDirectInput: (v: number) => void;
   color: string;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState("");
+
+  const startEdit = () => {
+    setEditing(true);
+    setInputVal(value === 0 ? "" : String(value));
+  };
+
+  const commitEdit = () => {
+    const parsed = parseInt(inputVal, 10);
+    if (!isNaN(parsed) && parsed >= 0) onDirectInput(parsed);
+    setEditing(false);
+  };
+
   return (
     <div
       className="rounded-2xl px-5 py-4"
-      style={{
-        background: "#1E293B",
-        border: "1.5px solid rgba(148,163,184,0.12)",
-      }}
+      style={{ background: "#1E293B", border: "1.5px solid rgba(148,163,184,0.12)" }}
     >
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -222,7 +272,9 @@ function CounterCard({
           {value > 0 ? `${value} sac${value > 1 ? "s" : ""}` : "—"}
         </div>
       </div>
+
       <div className="flex items-center gap-4">
+        {/* Bouton Moins */}
         <button
           onPointerDown={() => onAdjust(-1)}
           className="flex items-center justify-center rounded-xl transition-all active:scale-90"
@@ -232,21 +284,58 @@ function CounterCard({
             background: value === 0 ? "#0F172A" : "#334155",
             color: value === 0 ? "#334155" : "#F1F5F9",
             border: "none",
-            fontSize: 24,
             flex: "0 0 auto",
           }}
         >
           <Minus size={22} strokeWidth={2.5} />
         </button>
-        <motion.div
-          key={value}
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          className="flex-1 text-center text-white"
-          style={{ fontSize: 48, fontWeight: 800, letterSpacing: "-2px", lineHeight: 1 }}
-        >
-          {value}
-        </motion.div>
+
+        {/* Valeur cliquable pour saisie directe */}
+        {editing ? (
+          <input
+            autoFocus
+            value={inputVal}
+            inputMode="numeric"
+            pattern="[0-9]*"
+            onChange={(e) => setInputVal(e.target.value.replace(/\D/g, ""))}
+            onBlur={commitEdit}
+            onKeyDown={(e) => e.key === "Enter" && commitEdit()}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              fontSize: 48,
+              fontWeight: 800,
+              letterSpacing: "-2px",
+              lineHeight: 1,
+              background: "transparent",
+              border: "none",
+              borderBottom: `2px solid ${color}`,
+              color: "#fff",
+              outline: "none",
+              width: "100%",
+            }}
+          />
+        ) : (
+          <motion.div
+            key={value}
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            onClick={startEdit}
+            className="flex-1 text-center text-white"
+            style={{
+              fontSize: 48,
+              fontWeight: 800,
+              letterSpacing: "-2px",
+              lineHeight: 1,
+              cursor: "pointer",
+              borderBottom: "2px solid transparent",
+            }}
+          >
+            {value}
+          </motion.div>
+        )}
+
+        {/* Bouton Plus */}
         <button
           onPointerDown={() => onAdjust(1)}
           className="flex items-center justify-center rounded-xl transition-all active:scale-90"
@@ -256,7 +345,6 @@ function CounterCard({
             background: color + "22",
             color: color,
             border: `1.5px solid ${color}44`,
-            fontSize: 24,
             flex: "0 0 auto",
           }}
         >
