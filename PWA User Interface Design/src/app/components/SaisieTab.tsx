@@ -4,11 +4,18 @@ import { motion, AnimatePresence } from "motion/react";
 
 interface SaisieTabProps {
   onSave: (entry: { name: string; low: number; high: number }) => void;
+  entries: { low: number; high: number; timestamp: Date }[];
 }
 
 const QUICK_NAMES = ["Malien", "Lau", "Cha", "Franc"];
 
-export function SaisieTab({ onSave }: SaisieTabProps) {
+export function SaisieTab({ onSave, entries }: SaisieTabProps) {
+  const today = new Date().toDateString();
+  const todayEntries = entries.filter(e => new Date(e.timestamp).toDateString() === today);
+  const todayBas = todayEntries.reduce((s, e) => s + e.low, 0);
+  const todayHaut = todayEntries.reduce((s, e) => s + e.high, 0);
+  const todayTotal = todayBas * 250 + todayHaut * 500;
+
   const [name, setName] = useState("");
   const [low, setLow] = useState(0);
   const [high, setHigh] = useState(0);
@@ -24,6 +31,7 @@ export function SaisieTab({ onSave }: SaisieTabProps) {
   const handleSave = () => {
     if (!name.trim() || (low === 0 && high === 0)) return;
     onSave({ name: name.trim(), low, high });
+    navigator.vibrate?.(50);
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
