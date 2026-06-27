@@ -10,18 +10,19 @@ interface SaisieTabProps {
 const QUICK_NAMES = ["Malien", "Lau", "Cha", "Franc"];
 
 export function SaisieTab({ onSave, entries }: SaisieTabProps) {
-  const today = new Date().toDateString();
-  const todayEntries = entries.filter(e => new Date(e.timestamp).toDateString() === today);
-  const todayBas = todayEntries.reduce((s, e) => s + e.low, 0);
-  const todayHaut = todayEntries.reduce((s, e) => s + e.high, 0);
-  const todayTotal = todayBas * 250 + todayHaut * 500;
-
   const [name, setName] = useState("");
   const [low, setLow] = useState(0);
   const [high, setHigh] = useState(0);
   const [saved, setSaved] = useState(false);
 
   const total = low * 250 + high * 500;
+
+  // Résumé du jour
+  const todayStr = new Date().toDateString();
+  const todayEntries = entries.filter(e => new Date(e.timestamp).toDateString() === todayStr);
+  const todayBas = todayEntries.reduce((s, e) => s + e.low, 0);
+  const todayHaut = todayEntries.reduce((s, e) => s + e.high, 0);
+  const todayTotal = todayBas * 250 + todayHaut * 500;
 
   const adjust = (type: "low" | "high", delta: number) => {
     if (type === "low") setLow((v) => Math.max(0, v + delta));
@@ -65,18 +66,31 @@ export function SaisieTab({ onSave, entries }: SaisieTabProps) {
             Enregistrement quotidien
           </p>
         </div>
-        <div
-          className="px-3 py-1.5 rounded-full"
-          style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
-        >
-          <span style={{ color: "#10B981", fontSize: 12, fontWeight: 600 }}>
-            {today.charAt(0).toUpperCase() + today.slice(1)}
-          </span>
+
+        {/* Badge date + résumé du jour */}
+        <div className="flex flex-col gap-1 items-end">
+          <div
+            className="px-3 py-1.5 rounded-full"
+            style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
+          >
+            <span style={{ color: "#10B981", fontSize: 12, fontWeight: 600 }}>
+              {today.charAt(0).toUpperCase() + today.slice(1)}
+            </span>
+          </div>
+          {todayEntries.length > 0 && (
+            <div style={{ color: "#64748B", fontSize: 11, textAlign: "right", lineHeight: 1.4 }}>
+              Aujourd'hui · {todayBas + todayHaut} sacs{"\n"}
+              <span style={{ color: "#10B981", fontWeight: 600 }}>
+                {todayTotal.toLocaleString("fr-FR")} FCFA
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="px-5 flex flex-col gap-4">
-        {/* Quick name buttons */}
+
+        {/* Boutons sélection rapide */}
         <div>
           <label
             className="text-slate-400 mb-2 block"
@@ -107,7 +121,7 @@ export function SaisieTab({ onSave, entries }: SaisieTabProps) {
           </div>
         </div>
 
-        {/* Name input */}
+        {/* Saisie nom libre */}
         <div>
           <label
             className="text-slate-400 mb-2 block"
@@ -266,12 +280,8 @@ function CounterCard({
     >
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-white" style={{ fontSize: 17, fontWeight: 700 }}>
-            {label}
-          </div>
-          <div className="text-slate-500" style={{ fontSize: 13 }}>
-            {sublabel}
-          </div>
+          <div className="text-white" style={{ fontSize: 17, fontWeight: 700 }}>{label}</div>
+          <div className="text-slate-500" style={{ fontSize: 13 }}>{sublabel}</div>
         </div>
         <div
           className="px-3 py-1 rounded-full"
@@ -282,23 +292,19 @@ function CounterCard({
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Bouton Moins */}
         <button
           onPointerDown={() => onAdjust(-1)}
           className="flex items-center justify-center rounded-xl transition-all active:scale-90"
           style={{
-            width: 60,
-            height: 60,
+            width: 60, height: 60,
             background: value === 0 ? "#0F172A" : "#334155",
             color: value === 0 ? "#334155" : "#F1F5F9",
-            border: "none",
-            flex: "0 0 auto",
+            border: "none", flex: "0 0 auto",
           }}
         >
           <Minus size={22} strokeWidth={2.5} />
         </button>
 
-        {/* Valeur cliquable pour saisie directe */}
         {editing ? (
           <input
             autoFocus
@@ -309,18 +315,10 @@ function CounterCard({
             onBlur={commitEdit}
             onKeyDown={(e) => e.key === "Enter" && commitEdit()}
             style={{
-              flex: 1,
-              textAlign: "center",
-              fontSize: 48,
-              fontWeight: 800,
-              letterSpacing: "-2px",
-              lineHeight: 1,
-              background: "transparent",
-              border: "none",
-              borderBottom: `2px solid ${color}`,
-              color: "#fff",
-              outline: "none",
-              width: "100%",
+              flex: 1, textAlign: "center", fontSize: 48, fontWeight: 800,
+              letterSpacing: "-2px", lineHeight: 1, background: "transparent",
+              border: "none", borderBottom: `2px solid ${color}`,
+              color: "#fff", outline: "none", width: "100%",
             }}
           />
         ) : (
@@ -331,29 +329,21 @@ function CounterCard({
             onClick={startEdit}
             className="flex-1 text-center text-white"
             style={{
-              fontSize: 48,
-              fontWeight: 800,
-              letterSpacing: "-2px",
-              lineHeight: 1,
-              cursor: "pointer",
-              borderBottom: "2px solid transparent",
+              fontSize: 48, fontWeight: 800, letterSpacing: "-2px",
+              lineHeight: 1, cursor: "pointer", borderBottom: "2px solid transparent",
             }}
           >
             {value}
           </motion.div>
         )}
 
-        {/* Bouton Plus */}
         <button
           onPointerDown={() => onAdjust(1)}
           className="flex items-center justify-center rounded-xl transition-all active:scale-90"
           style={{
-            width: 60,
-            height: 60,
-            background: color + "22",
-            color: color,
-            border: `1.5px solid ${color}44`,
-            flex: "0 0 auto",
+            width: 60, height: 60,
+            background: color + "22", color: color,
+            border: `1.5px solid ${color}44`, flex: "0 0 auto",
           }}
         >
           <Plus size={22} strokeWidth={2.5} />
