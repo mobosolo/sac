@@ -67,21 +67,20 @@ export default function App() {
         maxWidth: 430,
         margin: "0 auto",
         position: "relative",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
         overflow: "hidden",
       }}
     >
-      {/* Tab content */}
       <div style={{ paddingBottom: 80, minHeight: "100dvh" }}>
-        {activeTab === "saisie" && <SaisieTab onSave={handleSave} />}
+        {activeTab === "saisie" && (
+          <SaisieTab onSave={handleSave} entries={entries} />
+        )}
         {activeTab === "historique" && (
-  <HistoriqueTab entries={entries} onDelete={handleDelete} />
-)}
-        {activeTab === "saisie" && <SaisieTab onSave={handleSave} entries={entries} />}
+          <HistoriqueTab entries={entries} onDelete={handleDelete} onExport={handleExport} />
+        )}
+        {activeTab === "resume" && <ResumeTab entries={entries} />}
       </div>
 
-      {/* Bottom navigation */}
       <div
         style={{
           position: "fixed",
